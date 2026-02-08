@@ -1,10 +1,8 @@
 export default async function handler(req, res) {
-    // Autorisations de sécurité pour ton PC
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
     try {
-        // On interroge la page des arrivées
         const response = await fetch("https://www.zone-turf.fr/arrivees-rapports/", { 
             headers: { 
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0",
@@ -13,21 +11,27 @@ export default async function handler(req, res) {
         });
         const html = await response.text();
         
-        // Extraction des numéros (balises class="num")
-        const regex = /<span class="num">(\d+)<\/span>/g;
-        let match, numeros = [];
+        // On cherche le bloc qui contient "Quinté +"
+        // On isole la partie du code après la mention Quinté pour être sûr
+        const splitHtml = html.split('Quinté +');
         
-        while ((match = regex.exec(html)) !== null) {
-            numeros.push(match[1]);
-        }
+        if (splitHtml.length > 1) {
+            const blocQuinte = splitHtml[1].substring(0, 1000); // On prend les 1000 caractères suivants
+            const regex = /<span class="num">(\d+)<\/span>/g;
+            let match, numeros = [];
+            
+            while ((match = regex.exec(blocQuinte)) !== null) {
+                numeros.push(match[1]);
+            }
 
-        // On prend les 5 premiers numéros détectés
-        if (numeros.length > 0) {
-            const arrivee = numeros.slice(0, 5).join(" - ");
-            res.status(200).send(arrivee);
+            if (numeros.length >= 5) {
+                const arrivee = numeros.slice(0, 5).join(" - ");
+                res.status(200).send("QUINTÉ: " + arrivee);
+            } else {
+                res.status(200).send("QUINTÉ: EN ATTENTE");
+            }
         } else {
-            // Si aucune course n'est publiée, on garde le serveur en éveil
-            res.status(200).send("EN ATTENTE");
+            res.status(200).send("QUINTÉ NON TROUVÉ");
         }
     } catch (e) {
         res.status(500).send("ERREUR_LECTURE");
