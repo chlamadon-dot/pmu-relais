@@ -5,31 +5,21 @@ export default async function handler(req, res) {
 
     try {
         const response = await fetch(url, { 
-            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } 
+            headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15" } 
         });
         const html = await response.text();
         
-        // Cette regex cherche tous les chiffres qui sont isolés ou dans des cercles
-        // Elle ignore le texte et ne garde que les suites de 1 ou 2 chiffres
-        const regex = />(\d{1,2})</g;
-        let match;
-        let numeros = [];
+        // On capture TOUS les nombres entre 1 et 20 entourés de balises HTML
+        const allNumbers = html.match(/>(\d{1,2})</g);
         
-        while ((match = regex.exec(html)) !== null) {
-            let n = parseInt(match[1]);
-            // On ne garde que les chiffres logiques pour une course (1 à 22)
-            if (n > 0 && n <= 22) {
-                numeros.push(n);
-            }
-        }
-
-        // On enlève les doublons et on prend les 5 premiers
-        const uniqueNumeros = [...new Set(numeros)].slice(0, 5);
-        
-        if (uniqueNumeros.length >= 5) {
-            res.status(200).send(uniqueNumeros.join(" - "));
+        if (allNumbers) {
+            // On nettoie les symboles ">" et "<" pour ne garder que les chiffres
+            const clean = allNumbers.map(n => n.replace(/[><]/g, '')).filter(n => n > 0 && n <= 20);
+            // On prend les 5 premiers qui se suivent (souvent l'arrivée)
+            const resultat = clean.slice(0, 5).join(" - ");
+            res.status(200).send(resultat || "AUCUN CHIFFRE");
         } else {
-            res.status(200).send("RECHERCHE FLUX...");
+            res.status(200).send("PAGE VIDE");
         }
     } catch (e) {
         res.status(500).send("ERREUR");
