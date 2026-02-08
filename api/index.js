@@ -3,27 +3,28 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
     try {
-        // Le paramètre ?v= force le rafraîchissement réel de la page
+        // Le paramètre ?v= force le rafraîchissement réel pour éviter le cache
         const response = await fetch("https://www.zone-turf.fr/arrivees-rapports/?v=" + Date.now(), { 
             headers: { "User-Agent": "Mozilla/5.0" } 
         });
         const html = await response.text();
         
-        // Cette regex magique cherche soit les balises "num", soit le texte "officiels :"
+        // On cherche les numéros dans les balises classiques OU après le texte "officiels :"
         const regex = /(?:officiels\s*:\s*|num">)(\d+(?:\s*-\s*\d+)*)/gi;
         let matches = [];
         let match;
         
         while ((match = regex.exec(html)) !== null) {
-            // On nettoie les espaces et on garde la séquence de chiffres
-            matches.push(match[1].replace(/\s+/g, '').replace(/-/g, ' - '));
+            // Nettoyage pour un affichage propre : "8 - 11 - 5..."
+            let clean = match[1].replace(/\s+/g, '').replace(/-/g, ' - ');
+            matches.push(clean);
         }
 
         if (matches.length > 0) {
-            // On affiche la toute première arrivée (la plus récente)
+            // Renvoie la toute première arrivée (la plus récente en haut de page)
             res.status(200).send("ARRIVÉE : " + matches[0]);
         } else {
-            res.status(200).send("SCAN EN COURS...");
+            res.status(200).send("RECHERCHE DE FLUX...");
         }
     } catch (e) {
         res.status(500).send("ERREUR_LECTURE");
