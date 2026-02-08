@@ -5,19 +5,18 @@ export default async function handler(req, res) {
     try {
         const response = await fetch("https://www.zone-turf.fr/arrivees-rapports/", { 
             headers: { 
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0",
-                "Accept-Language": "fr-FR,fr;q=0.9"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0"
             } 
         });
         const html = await response.text();
         
-        // 1. On s'assure d'être dans la Réunion 1 (Vincennes)
-        const splitR1 = html.split('Réunion 1');
+        // On cherche directement par le nom de l'hippodrome
+        const splitVincennes = html.split('Vincennes');
         
-        if (splitR1.length > 1) {
-            // 2. Dans la R1, on cherche la Course 9
-            const blocR1 = splitR1[1].split('Réunion 2')[0]; // On s'arrête avant la R2 pour ne pas mélanger
-            const splitC9 = blocR1.split('Course 9');
+        if (splitVincennes.length > 1) {
+            // On cherche la Course 9 dans le bloc de Vincennes
+            const blocVincennes = splitVincennes[1].substring(0, 3000); 
+            const splitC9 = blocVincennes.split('Course 9');
 
             if (splitC9.length > 1) {
                 const blocC9 = splitC9[1].substring(0, 800); 
@@ -29,16 +28,15 @@ export default async function handler(req, res) {
                 }
 
                 if (numeros.length > 0) {
-                    const arrivee = numeros.slice(0, 5).join(" - ");
-                    res.status(200).send("R1C9: " + arrivee);
+                    res.status(200).send("VINCENNES C9: " + numeros.slice(0, 5).join(" - "));
                 } else {
-                    res.status(200).send("R1C9: EN ATTENTE");
+                    res.status(200).send("C9: EN ATTENTE");
                 }
             } else {
-                res.status(200).send("C9 NON TROUVÉE DANS R1");
+                res.status(200).send("C9 NON TROUVÉE");
             }
         } else {
-            res.status(200).send("R1 NON DÉTECTÉE");
+            res.status(200).send("VINCENNES NON DÉTECTÉ");
         }
     } catch (e) {
         res.status(500).send("ERREUR_LECTURE");
