@@ -1,13 +1,9 @@
 export default async function handler(req, res) {
-    // AUTORISATIONS TOTALES (CORS)
+    // Autorisations de sécurité totales pour éviter les blocages PC
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 
-    // Réponse immédiate pour le test
-    const numTest = "12 - 5 - 1 - 18 - 4"; 
-    
-    // On force le format texte pour être sûr que le PC le lise
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send(numTest);
+    // On envoie uniquement les chiffres, rien d'autre
+    res.status(200).send("12 - 5 - 1 - 18 - 4");
 }
