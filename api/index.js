@@ -5,23 +5,22 @@ export default async function handler(req, res) {
 
     try {
         const response = await fetch(url, { 
-            headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15" } 
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0" } 
         });
         const html = await response.text();
         
-        // On capture TOUS les nombres entre 1 et 20 entourés de balises HTML
-        const allNumbers = html.match(/>(\d{1,2})</g);
-        
-        if (allNumbers) {
-            // On nettoie les symboles ">" et "<" pour ne garder que les chiffres
-            const clean = allNumbers.map(n => n.replace(/[><]/g, '')).filter(n => n > 0 && n <= 20);
-            // On prend les 5 premiers qui se suivent (souvent l'arrivée)
-            const resultat = clean.slice(0, 5).join(" - ");
-            res.status(200).send(resultat || "AUCUN CHIFFRE");
+        // On cherche TOUT ce qui ressemble à un numéro de cheval (1 à 20)
+        // On prend une zone plus large pour être sûr
+        const rawNumbers = html.match(/>(\d{1,2})</g) || [];
+        const clean = rawNumbers.map(n => n.replace(/[><]/g, '')).filter(n => n > 0 && n <= 20);
+
+        // DEBUG : Si on ne trouve rien de propre, on renvoie les 100 premiers caractères du site
+        if (clean.length > 0) {
+            res.status(200).send(clean.slice(0, 5).join(" - "));
         } else {
-            res.status(200).send("PAGE VIDE");
+            res.status(200).send("CAPTURED: " + html.substring(0, 20) + "...");
         }
     } catch (e) {
-        res.status(500).send("ERREUR");
+        res.status(500).send("ERREUR SERVEUR: " + e.message);
     }
 }
