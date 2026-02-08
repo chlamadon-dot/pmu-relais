@@ -4,16 +4,24 @@ export default async function handler(req, res) {
     if (key !== "1234") return res.status(403).send("REFUS");
 
     try {
-        const response = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (iPhone; OS 17_0)" } });
+        const response = await fetch(url, { 
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } 
+        });
         const html = await response.text();
-        const numReg = /<span class="num[^>]*>(.*?)<\/span>/g;
+        
+        // On cherche TOUS les nombres entre 1 et 20 situés dans les zones d'arrivée
+        const regex = /<span class="num[^>]*>(\d+)<\/span>|(\d+)<\/span><\/li>/g;
         let match, numeros = [];
-        while ((match = numReg.exec(html)) !== null) {
-            let n = match[1].replace(/<[^>]*>?/gm, '').trim();
-            if (n && !isNaN(n)) numeros.push(n);
+        
+        while ((match = regex.exec(html)) !== null) {
+            let n = match[1] || match[2];
+            if (n) numeros.push(n);
         }
-        res.status(200).send(numeros.slice(0, 5).join(" - ") || "EN ATTENTE");
+
+        // Si on a des numéros, on les affiche. Sinon, message d'attente.
+        const resultat = numeros.length > 0 ? numeros.slice(0, 5).join(" - ") : "EN ATTENTE";
+        res.status(200).send(resultat);
     } catch (e) {
-        res.status(500).send("ERREUR");
+        res.status(500).send("ERREUR RÉSEAU");
     }
 }
