@@ -5,23 +5,22 @@ export default async function handler(req, res) {
 
     try {
         const response = await fetch(url, { 
-            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } 
+            headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)" } 
         });
         const html = await response.text();
         
-        // On cherche TOUS les nombres entre 1 et 20 situés dans les zones d'arrivée
-        const regex = /<span class="num[^>]*>(\d+)<\/span>|(\d+)<\/span><\/li>/g;
-        let match, numeros = [];
+        // Nouvelle méthode : on cherche les numéros dans les cercles d'arrivée (class="num")
+        // et on nettoie tout le texte autour pour ne garder que les chiffres purs.
+        const matches = html.match(/<span class="num">(\d+)<\/span>/g);
         
-        while ((match = regex.exec(html)) !== null) {
-            let n = match[1] || match[2];
-            if (n) numeros.push(n);
+        if (matches) {
+            const numeros = matches.map(m => m.replace(/\D/g, '')).slice(0, 5);
+            res.status(200).send(numeros.join(" - "));
+        } else {
+            // Si pas de balises spéciales, on cherche les premiers chiffres isolés
+            res.status(200).send("VÉRIFICATION EN COURS...");
         }
-
-        // Si on a des numéros, on les affiche. Sinon, message d'attente.
-        const resultat = numeros.length > 0 ? numeros.slice(0, 5).join(" - ") : "EN ATTENTE";
-        res.status(200).send(resultat);
     } catch (e) {
-        res.status(500).send("ERREUR RÉSEAU");
+        res.status(500).send("ERREUR LECTURE");
     }
 }
