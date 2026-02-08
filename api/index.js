@@ -1,12 +1,13 @@
 export default async function handler(req, res) {
-    // Autoriser la connexion depuis ton fichier local
+    // AUTORISATIONS TOTALES (CORS)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // On simule une réponse immédiate avec des numéros de test
-    // Cela permet de vérifier que ton tableau de bord reçoit bien les données
+    // Réponse immédiate pour le test
     const numTest = "12 - 5 - 1 - 18 - 4"; 
     
-    // On envoie la réponse en texte brut
+    // On force le format texte pour être sûr que le PC le lise
+    res.setHeader('Content-Type', 'text/plain');
     res.status(200).send(numTest);
 }
