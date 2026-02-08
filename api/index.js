@@ -1,6 +1,14 @@
+// Variable hors du handler pour garder une trace en mémoire (cache serveur)
+let archiveC9 = null;
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
+    // Si on a déjà trouvé l'arrivée, on renvoie l'archive directement
+    if (archiveC9) {
+        return res.status(200).send("ARCHIVE C9: " + archiveC9);
+    }
 
     try {
         const response = await fetch("https://www.zone-turf.fr/arrivees-rapports/", { 
@@ -8,11 +16,9 @@ export default async function handler(req, res) {
         });
         const html = await response.text();
         
-        // On cherche le bloc "Course 9" sans se soucier de l'hippodrome
         const splitC9 = html.split('Course 9');
         
         if (splitC9.length > 1) {
-            // On prend les numéros juste après la mention "Course 9"
             const blocC9 = splitC9[1].substring(0, 1000); 
             const regex = /<span class="num">(\d+)<\/span>/g;
             let match, numeros = [];
@@ -22,8 +28,8 @@ export default async function handler(req, res) {
             }
 
             if (numeros.length >= 3) {
-                const arrivee = numeros.slice(0, 5).join(" - ");
-                res.status(200).send("COURSE 9: " + arrivee);
+                archiveC9 = numeros.slice(0, 5).join(" - "); // On archive ici
+                res.status(200).send("C9: " + archiveC9);
             } else {
                 res.status(200).send("C9: EN ATTENTE");
             }
