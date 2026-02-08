@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
     const { url, key } = req.query;
-    if (key !== "1234") return res.status(403).send("Clé incorrecte");
+    if (key !== "1234") return res.status(403).send("CLÉ INCORRECTE");
 
     const userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 
@@ -11,13 +11,20 @@ export default async function handler(req, res) {
         const response = await fetch(url, { headers: { "User-Agent": userAgent } });
         const html = await response.text();
 
-        // RUSE : On cherche les balises qui contiennent les numéros (ex: class="num")
-        // Pour ce test, on va renvoyer un extrait propre
-        const extraction = html.match(/<span class="num">(.*?)<\/span>/g) || ["Aucune donnée trouvée"];
+        // Extraction précise des numéros de l'arrivée
+        const numReg = /<span class="num">(.*?)<\/span>/g;
+        let match;
+        let numeros = [];
+        while ((match = numReg.exec(html)) !== null) {
+            numeros.push(match[1]);
+        }
+
+        // On prend les 5 premiers numéros et on les sépare par des tirets
+        const resultat = numeros.slice(0, 5).join(" - ");
         
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.status(200).send(extraction.slice(0, 10).join(" - ").replace(/<[^>]*>?/gm, ''));
-    } catch (error) {
-        res.status(500).send("Erreur d'extraction");
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.status(200).send(resultat || "AUCUNE ARRIVÉE DISPONIBLE");
+    } catch (e) {
+        res.status(500).send("ERREUR DE CONNEXION AU SITE");
     }
 }
