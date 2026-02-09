@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+    // Autorise ton fichier HTML local à communiquer avec Vercel
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
@@ -9,7 +10,7 @@ export default async function handler(req, res) {
         });
         const html = await response.text();
         
-        // On cherche les numéros dans les balises classiques OU après le texte "officiels :"
+        // Cette regex capture les numéros dans les balises classiques OU après "officiels :"
         const regex = /(?:officiels\s*:\s*|num">)(\d+(?:\s*-\s*\d+)*)/gi;
         let matches = [];
         let match;
