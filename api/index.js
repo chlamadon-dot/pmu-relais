@@ -8,8 +8,9 @@ export default async function handler(req, res) {
         });
         const html = await response.text();
 
-        // IMPORTANT : le ( ... ) ici → match[1]
-        const regex = /(?:officiels\s*:\s*|num[^>]*>)(\d+(?:\s*-\s*\d+)*)/gi;
+        // Capture TOUTES les séquences de type "8 - 11 - 5" ou "8-11-5"
+        const regex = /(\d{1,2}(?:\s*-\s*\d{1,2}){1,5})/g;
+
         let matches = [];
         let match;
 
