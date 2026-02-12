@@ -8,6 +8,7 @@ export default async function handler(req, res) {
         });
         const html = await response.text();
 
+        // IMPORTANT : le ( ... ) ici → match[1]
         const regex = /(?:officiels\s*:\s*|num[^>]*>)(\d+(?:\s*-\s*\d+)*)/gi;
         let matches = [];
         let match;
